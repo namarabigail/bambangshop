@@ -84,5 +84,16 @@ This is the place for you to write reflections:
 3. Kita membutuhkan keduanya karena mereka menangani masalah yang berbeda. **Singleton pattern** (`lazy_static!`) digunakan untuk memastikan bahwa hanya ada satu *instance* basis data global (`SUBSCRIBERS`) yang dapat diakses di seluruh aplikasi. Sementara itu, **DashMap** digunakan untuk menjamin *thread-safety* saat banyak *thread* mencoba mengakses data tersebut secara bersamaan. Singleton saja tanpa struktur data *thread-safe* seperti `DashMap` akan menyebabkan *data race* atau membutuhkan penguncian manual menggunakan `Mutex`, yang bisa memperlambat performa aplikasi.
 
 #### Reflection Publisher-2
+1. Pemisahan ini dilakukan untuk memenuhi prinsip **Single Responsibility Principle (SRP)** dan **Separation of Concerns (SoC)**. Jika semua logic disatukan dalam Model, maka Model tersebut akan menjadi "Fat Model" yang sulit dikelola. 
+* **Repository** berfungsi khusus untuk menangani abstraksi penyimpanan data (seperti `DashMap` atau database), sehingga logika bisnis tidak perlu tahu bagaimana data disimpan. 
+* **Service** bertugas mengelola logika bisnis dan koordinasi antar model. 
+Dengan pemisahan ini, kode menjadi lebih mudah diuji (*testable*), dan jika kita ingin mengganti metode penyimpanan data, kita tidak perlu mengubah logika bisnis di dalam Model atau Service.
 
+2. Jika hanya menggunakan Model, setiap model akan memiliki ketergantungan yang sangat tinggi satu sama lain (*high coupling*). 
+Sebagai contoh, Model **Product** tidak hanya akan berisi data produk, tetapi juga harus memahami cara mengirim **Notification** dan cara mengakses daftar **Subscriber**. Setiap kali ada perubahan pada logika pengiriman notifikasi, kita terpaksa mengubah kode di dalam Model Product. Kompleksitas akan meningkat secara eksponensial karena batas tanggung jawab antar objek menjadi kabur, membuat *debugging* dan pemeliharaan kode menjadi sangat sulit saat fitur aplikasi bertambah.
+
+3. Postman sangat membantu dalam melakukan integrasi dan pengujian *endpoint* API secara mandiri. Dalam tugas ini, Postman memungkinkan saya mensimulasikan permintaan `POST` untuk membuat produk atau menambah subscriber secara cepat. 
+Fitur yang menurut saya sangat berguna untuk Proyek Kelompok adalah:
+* **Collections:** Untuk mengelompokkan semua *request* API sehingga anggota tim lain bisa langsung menggunakannya tanpa perlu konfigurasi ulang.
+* **Automated Tests:** Untuk memastikan bahwa setiap perubahan kode tidak merusak fitur yang sudah ada (*regression testing*).
 #### Reflection Publisher-3
