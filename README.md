@@ -96,4 +96,13 @@ Sebagai contoh, Model **Product** tidak hanya akan berisi data produk, tetapi ju
 Fitur yang menurut saya sangat berguna untuk Proyek Kelompok adalah:
 * **Collections:** Untuk mengelompokkan semua *request* API sehingga anggota tim lain bisa langsung menggunakannya tanpa perlu konfigurasi ulang.
 * **Automated Tests:** Untuk memastikan bahwa setiap perubahan kode tidak merusak fitur yang sudah ada (*regression testing*).
+
 #### Reflection Publisher-3
+1. Dalam tutorial ini, kita menggunakan **Push Model**. Hal ini terlihat dari implementasi di mana **Publisher** (`BambangShop`) mengirimkan data lengkap dalam bentuk objek `Notification` langsung ke *endpoint* milik **Subscriber** segera setelah terjadi perubahan status (seperti pembuatan atau penghapusan produk). Subscriber tidak perlu meminta data tersebut, melainkan hanya menunggu kiriman dari Publisher.
+
+2. Jika kita menggunakan **Pull Model**, maka Publisher hanya akan memberikan notifikasi singkat bahwa ada perubahan, lalu Subscriber harus melakukan *request* balik ke Publisher untuk mengambil detail datanya.
+
+* **Keuntungan:** Subscriber memiliki kontrol penuh atas kapan mereka ingin mengambil data, yang sangat berguna jika Subscriber sedang sibuk. Selain itu, jika terjadi banyak perubahan dalam waktu singkat, Subscriber bisa menggabungkan pengambilan data tersebut dalam satu kali *request* saja.
+* **Kerugian:** Terjadi peningkatan beban jaringan karena satu kejadian membutuhkan dua kali komunikasi (*Notify* dari Publisher dan *Request* dari Subscriber). Selain itu, Publisher harus menyediakan dan mengelola *state* atau histori perubahan agar Subscriber tahu data mana yang belum mereka ambil, yang menambah kompleksitas pada sisi server.
+
+3. Jika kita tidak menggunakan *multi-threading*, maka performa aplikasi BambangShop akan menurun. Setiap kali ada produk baru, aplikasi utama harus menunggu proses pengiriman notifikasi HTTP ke setiap Subscriber selesai satu per satu sebelum bisa melanjutkan tugas selanjutnya. Jika salah satu server Subscriber mengalami gangguan atau memiliki respon yang lambat, maka seluruh aplikasi BambangShop akan ikut terhenti atau mengalami *timeout*, sehingga pengguna lain tidak bisa berinteraksi dengan aplikasi tersebut. Dengan *multi-threading*, proses pengiriman notifikasi dilakukan di "latar belakang," sehingga aplikasi utama tetap responsif.
