@@ -77,6 +77,11 @@ This is the place for you to write reflections:
 ### Mandatory (Publisher) Reflections
 
 #### Reflection Publisher-1
+1. Dalam kasus BambangShop, penggunaan sebuah **Model struct** saja sudah cukup karena semua *subscriber* merupakan aplikasi eksternal yang dihubungi melalui protokol HTTP yang sama. Berbeda dengan contoh di buku *Head First*, di sini setiap *subscriber* hanya direpresentasikan oleh data URL dan nama yang sama. Namun, jika ke depannya kita ingin mendukung berbagai tipe *subscriber* dengan mekanisme notifikasi yang berbeda (SMS, Email, dan Webhook), maka penggunaan **Trait** akan menjadi lebih tepat untuk mendukung prinsip polimorfisme.  
+
+2. Penggunaan **DashMap** jauh lebih diperlukan dan efisien dibandingkan `Vec` untuk kasus ini karena kita membutuhkan jaminan keunikan pada URL *subscriber*. Jika menggunakan `Vec`, kita harus melakukan iterasi secara manual setiap kali ingin menambah atau menghapus data untuk memastikan tidak ada duplikasi, yang mana memiliki kompleksitas waktu $O(n)$. Dengan `DashMap`, kita bisa melakukan pencarian, penambahan, dan penghapusan berdasarkan *key* (URL) dengan rata-rata kompleksitas $O(1)$, sehingga performa aplikasi tetap stabil meskipun jumlah *subscriber* meningkat pesat.
+
+3. Kita membutuhkan keduanya karena mereka menangani masalah yang berbeda. **Singleton pattern** (`lazy_static!`) digunakan untuk memastikan bahwa hanya ada satu *instance* basis data global (`SUBSCRIBERS`) yang dapat diakses di seluruh aplikasi. Sementara itu, **DashMap** digunakan untuk menjamin *thread-safety* saat banyak *thread* mencoba mengakses data tersebut secara bersamaan. Singleton saja tanpa struktur data *thread-safe* seperti `DashMap` akan menyebabkan *data race* atau membutuhkan penguncian manual menggunakan `Mutex`, yang bisa memperlambat performa aplikasi.
 
 #### Reflection Publisher-2
 
